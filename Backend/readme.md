@@ -114,3 +114,67 @@ Login a user.
 
 **Internal Server Error (500):**
 - Returns a generic error message.
+
+## API Endpoints
+
+### Get User Profile
+
+- **URL:** `/users/profile`
+- **Method:** `GET`
+- **Auth required:** Yes (Bearer Token)
+- **Description:** Retrieves the authenticated user's profile information.
+
+#### Request Headers
+
+| Key           | Value                |
+|---------------|---------------------|
+| Authorization | Bearer `<JWT Token>` |
+
+#### Response
+
+- **200 OK**
+
+```json
+{
+  "user": {
+    "id": "string",
+    "email": "string",
+    "fullname": {
+      "firstname": "string",
+      "lastname": "string"
+    },
+    // ...other user fields
+  }
+}
+```
+
+- **401 Unauthorized**  
+  If the token is missing or invalid.
+
+---
+
+### Logout User
+
+- **URL:** `/users/logout`
+- **Method:** `POST`
+- **Auth required:** Yes (Bearer Token)
+- **Description:** Logs out the authenticated user and blacklist the token.
+
+#### Request Headers
+
+| Key           | Value                |
+|---------------|---------------------|
+| Authorization | Bearer `<JWT Token>` |
+
+#### Response
+
+- **200 OK**
+
+```json
+{
+  "message": "User logged out successfully"
+}
+```
+
+- **401 Unauthorized**  
+  If the token is missing or invalid.
