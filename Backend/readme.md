@@ -69,3 +69,48 @@ Example validation error:
 ### Notes
 - Ensure `Content-Type: application/json` header is set.
 - Password is hashed using bcrypt before storing.
+
+## User Login
+
+### POST /users/login
+
+Login a user.
+
+**Headers:**
+- `Content-Type: application/json`
+
+**Request Body:**
+- `email` (string, required): User's email address (must be valid email)
+- `password` (string, required): User's password (min 6 characters)
+
+**Success Response (200):**
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "_id": "6123abc...",
+    "fullname": { "firstname": "John", "lastname": "Doe" },
+    "email": "john@example.com",
+    "socketId": null
+  }
+}
+```
+
+**Validation Error (400):**
+```json
+{
+  "errors": [
+    { "msg": "Invalid Email", "param": "email", "location": "body" }
+  ]
+}
+```
+
+**Unauthorized (401):**
+```json
+{
+  "message": "Invalid email or password"
+}
+```
+
+**Internal Server Error (500):**
+- Returns a generic error message.
