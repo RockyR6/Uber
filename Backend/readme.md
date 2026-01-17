@@ -178,3 +178,55 @@ Login a user.
 
 - **401 Unauthorized**  
   If the token is missing or invalid.
+
+
+## POST /captain/register
+
+Register a new captain.
+
+- URL: `/captain/register`
+- Method: `POST`
+- Headers: `Content-Type: application/json`
+
+### Request body (JSON)
+- fullname (object, required)
+  - firstname (string, required) — minimum 3 characters
+- email (string, required) — must be a valid email address
+- password (string, required) — minimum 6 characters
+- vechicle (object, required)
+  - color (string, required) — minimum 3 characters
+  - plate (string, required) — minimum 3 characters
+  - capacity (integer, required) — minimum 1
+  - vechicleType (string, required) — must be one of: `car`, `bike`, `auto`
+
+Example:
+```json
+{
+  "fullname": {
+    "firstname": "Jane"
+  },
+  "email": "jane@example.com",
+  "password": "securepassword",
+  "vechicle": {
+    "color": "Red",
+    "plate": "XYZ123",
+    "capacity": 4,
+    "vechicleType": "car"
+  }
+}
+```
+
+### Validation rules & messages
+- `fullname.firstname` — min length 3 ("First name is required")
+- `email` — must be a valid email ("Valid email is required")
+- `password` — min length 6 ("Password must be at least 6 characters long")
+- `vechicle.color` — min length 3 ("Vechicle color is required")
+- `vechicle.plate` — min length 3 ("Vechicle plate is required")
+- `vechicle.capacity` — integer, min 1 ("Vechicle capacity is required")
+- `vechicle.vechicleType` — must be `car`, `bike`, or `auto` ("Vechicle type must be car, bike or auto")
+
+### Responses
+
+- 201 Created
+  - Body: `{ "token": "<jwt>", "captain": { ...captainWithoutPassword } }`
+  - The password is hashed on the server and is not returned.
