@@ -180,7 +180,7 @@ Login a user.
   If the token is missing or invalid.
 
 
-## POST /captain/register
+## POST /captains/register
 
 Register a new captain.
 
