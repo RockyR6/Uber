@@ -180,11 +180,11 @@ Login a user.
   If the token is missing or invalid.
 
 
-## POST /captain/register
+## POST /captains/register
 
 Register a new captain.
 
-- **URL:** `/captain/register`
+- **URL:** `/captains/register`
 - **Method:** `POST`
 - **Headers:** `Content-Type: application/json`
 
@@ -230,5 +230,163 @@ Example:
 ### Responses
 
 - **201 Created**
+
   - Body: `{ "token": "<jwt>", "captain": { ...captainWithoutPassword } }`
   - The password is hashed on the server and is not returned.
+
+Example success:
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "captain": {
+    "_id": "6123abc...",
+    "fullname": { "firstname": "Jane", "lastname": "Doe" },
+    "email": "jane@example.com",
+    "vehicle": {
+      "color": "Red",
+      "plate": "XYZ123",
+      "capacity": 4,
+      "vehicleType": "car"
+    }
+  }
+}
+```
+
+- **400 Bad Request**
+  - Returned when validation fails. Body: `{ "errors": [ { "msg": "...", "param": "..." } ] }`
+
+Example validation error:
+```json
+{
+  "errors": [
+    { "msg": "Valid email is required", "param": "email", "location": "body" }
+  ]
+}
+```
+
+- **500 Internal Server Error**
+  - Returned for unexpected server-side errors (e.g., database issues).
+
+---
+
+## Captain Login
+
+### POST /captains/login
+
+Login a captain.
+
+**Headers:**
+- `Content-Type: application/json`
+
+**Request Body:**
+- `email` (string, required): Captain's email address (must be valid email)
+- `password` (string, required): Captain's password (min 6 characters)
+
+**Success Response (200):**
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "captain": {
+    "_id": "6123abc...",
+    "fullname": { "firstname": "Jane", "lastname": "Doe" },
+    "email": "jane@example.com",
+    "vehicle": {
+      "color": "Red",
+      "plate": "XYZ123",
+      "capacity": 4,
+      "vehicleType": "car"
+    }
+  }
+}
+```
+
+**Validation Error (400):**
+```json
+{
+  "errors": [
+    { "msg": "Valid email is required", "param": "email", "location": "body" }
+  ]
+}
+```
+
+**Unauthorized (401):**
+```json
+{
+  "message": "Invalid email or password"
+}
+```
+
+**Internal Server Error (500):**
+- Returns a generic error message.
+
+---
+
+## Get Captain Profile
+
+- **URL:** `/captains/profile`
+- **Method:** `GET`
+- **Auth required:** Yes (Bearer Token)
+- **Description:** Retrieves the authenticated captain's profile information.
+
+#### Request Headers
+
+| Key           | Value                |
+|---------------|---------------------|
+| Authorization | Bearer `<JWT Token>` |
+
+#### Response
+
+- **200 OK**
+
+```json
+{
+  "captain": {
+    "id": "string",
+    "email": "string",
+    "fullname": {
+      "firstname": "string",
+      "lastname": "string"
+    },
+    "vehicle": {
+      "color": "string",
+      "plate": "string",
+      "capacity": 1,
+      "vehicleType": "car"
+    }
+    // ...other captain fields
+  }
+}
+```
+
+- **401 Unauthorized**  
+  If the token is missing or invalid.
+
+---
+
+## Logout Captain
+
+- **URL:** `/captains/logout`
+- **Method:** `POST`
+- **Auth required:** Yes (Bearer Token)
+- **Description:** Logs out the authenticated captain and blacklists the token.
+
+#### Request Headers
+
+| Key           | Value                |
+|---------------|---------------------|
+| Authorization | Bearer `<JWT Token>` |
+
+#### Response
+
+- **200 OK**
+
+```json
+{
+  "message": "Logged out successfully"
+}
+```
+
+- **401 Unauthorized**  
+  If the token is missing or invalid.
+
+  
