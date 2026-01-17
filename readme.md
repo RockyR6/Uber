@@ -180,38 +180,44 @@ Login a user.
   If the token is missing or invalid.
 
 
-## POST /captain/register
+
+
+# Captain API
+
+## POST /captains/register
 
 Register a new captain.
 
-- URL: `/captain/register`
-- Method: `POST`
-- Headers: `Content-Type: application/json`
+- **URL:** `/captain/register`
+- **Method:** `POST`
+- **Headers:** `Content-Type: application/json`
 
-### Request body (JSON)
-- fullname (object, required)
-  - firstname (string, required) — minimum 3 characters
-- email (string, required) — must be a valid email address
-- password (string, required) — minimum 6 characters
-- vechicle (object, required)
-  - color (string, required) — minimum 3 characters
-  - plate (string, required) — minimum 3 characters
-  - capacity (integer, required) — minimum 1
-  - vechicleType (string, required) — must be one of: `car`, `bike`, `auto`
+### Request Body (JSON)
+- `fullname` (object, required)
+  - `firstname` (string, required, min 3 chars)
+  - `lastname` (string, optional, min 3 chars if present)
+- `email` (string, required, valid email)
+- `password` (string, required, min 6 chars)
+- `vehicle` (object, required)
+  - `color` (string, required, min 3 chars)
+  - `plate` (string, required, min 3 chars)
+  - `capacity` (integer, required, min 1)
+  - `vehicleType` (string, required, one of: car, bike, auto)
 
 Example:
 ```json
 {
   "fullname": {
-    "firstname": "Jane"
+    "firstname": "Jane",
+    "lastname": "Doe"
   },
   "email": "jane@example.com",
   "password": "securepassword",
-  "vechicle": {
+  "vehicle": {
     "color": "Red",
     "plate": "XYZ123",
     "capacity": 4,
-    "vechicleType": "car"
+    "vehicleType": "car"
   }
 }
 ```
@@ -220,13 +226,210 @@ Example:
 - `fullname.firstname` — min length 3 ("First name is required")
 - `email` — must be a valid email ("Valid email is required")
 - `password` — min length 6 ("Password must be at least 6 characters long")
-- `vechicle.color` — min length 3 ("Vechicle color is required")
-- `vechicle.plate` — min length 3 ("Vechicle plate is required")
-- `vechicle.capacity` — integer, min 1 ("Vechicle capacity is required")
-- `vechicle.vechicleType` — must be `car`, `bike`, or `auto` ("Vechicle type must be car, bike or auto")
+- `vehicle.color` — min length 3 ("Vehicle color is required")
+- `vehicle.plate` — min length 3 ("Vehicle plate is required")
+- `vehicle.capacity` — integer, min 1 ("Vehicle capacity is required")
+- `vehicle.vehicleType` — one of: car, bike, auto ("Vehicle type must be car, bike or auto")
 
 ### Responses
 
-- 201 Created
+- **201 Created**
   - Body: `{ "token": "<jwt>", "captain": { ...captainWithoutPassword } }`
   - The password is hashed on the server and is not returned.
+
+Example success:
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "captain": {
+    "_id": "6123abc...",
+    "fullname": { "firstname": "Jane", "lastname": "Doe" },
+    "email": "jane@example.com",
+    "vehicle": {
+      "color": "Red",
+      "plate": "XYZ123",
+      "capacity": 4,
+      "vehicleType": "car"
+    }
+  }
+}
+```
+
+- **400 Bad Request**
+  - Returned when validation fails. Body: `{ "errors": [ { "msg": "...", "param": "..." } ] }`
+
+Example validation error:
+```json
+{
+  "errors": [
+    { "msg": "Valid email is required", "param": "email", "location": "body" }
+  ]
+}
+```
+
+- **400 Duplicate Email**
+  - Returned when a captain with the email already exists.
+
+Example duplicate email error:
+```json
+{
+  "message": "Captain with this email already exists"
+}
+```
+
+- **500 Internal Server Error**
+  - Returned for unexpected server-side errors.
+
+Example:
+```json
+{
+  "message": "Internal server error"
+}
+```
+
+---
+
+## POST /captains/login
+
+Login a captain.
+
+- **URL:** `/captain/login`
+- **Method:** `POST`
+- **Headers:** `Content-Type: application/json`
+
+### Request Body (JSON)
+- `email` (string, required): Captain's email address (must be valid email)
+- `password` (string, required): Captain's password (min 6 characters)
+
+Example:
+```json
+{
+  "email": "jane@example.com",
+  "password": "securepassword"
+}
+```
+
+### Responses
+
+- **200 OK**
+  - Body: `{ "token": "<jwt>", "captain": { ...captainWithoutPassword } }`
+
+Example success:
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "captain": {
+    "_id": "6123abc...",
+    "fullname": { "firstname": "Jane", "lastname": "Doe" },
+    "email": "jane@example.com",
+    "vehicle": {
+      "color": "Red",
+      "plate": "XYZ123",
+      "capacity": 4,
+      "vehicleType": "car"
+    }
+  }
+}
+```
+
+- **400 Bad Request**
+  - Returned when validation fails. Body: `{ "errors": [ { "msg": "...", "param": "..." } ] }`
+
+Example validation error:
+```json
+{
+  "errors": [
+    { "msg": "Valid email is required", "param": "email", "location": "body" }
+  ]
+}
+```
+
+- **401 Unauthorized**
+  - Returned when email or password is invalid.
+
+Example unauthorized error:
+```json
+{
+  "message": "Invalid email or password"
+}
+```
+
+- **500 Internal Server Error**
+  - Returns a generic error message.
+
+---
+
+## GET /captains/profile
+
+Get the authenticated captain's profile.
+
+- **URL:** `/captain/profile`
+- **Method:** `GET`
+- **Auth required:** Yes (Bearer Token)
+- **Description:** Retrieves the authenticated captain's profile information.
+
+### Request Headers
+
+| Key           | Value                |
+|---------------|---------------------|
+| Authorization | Bearer `<JWT Token>` |
+
+### Response
+
+- **200 OK**
+
+```json
+{
+  "captain": {
+    "_id": "string",
+    "fullname": {
+      "firstname": "string",
+      "lastname": "string"
+    },
+    "email": "string",
+    "vehicle": {
+      "color": "string",
+      "plate": "string",
+      "capacity": 1,
+      "vehicleType": "car"
+    }
+    // ...other captain fields
+  }
+}
+```
+
+- **401 Unauthorized**  
+  If the token is missing, invalid, or blacklisted.
+
+---
+
+## POST /captains/logout
+
+Logout the authenticated captain and blacklist the token.
+
+- **URL:** `/captain/logout`
+- **Method:** `POST`
+- **Auth required:** Yes (Bearer Token)
+- **Description:** Logs out the authenticated captain and blacklists the token.
+
+### Request Headers
+
+| Key           | Value                |
+|---------------|---------------------|
+| Authorization | Bearer `<JWT Token>` |
+
+### Response
+
+- **200 OK**
+
+```json
+{
+  "message": "Logged out successfully"
+}
+```
+
+- **401 Unauthorized**  
+  If the token is missing, invalid, or blacklisted.
+
+
+ 
