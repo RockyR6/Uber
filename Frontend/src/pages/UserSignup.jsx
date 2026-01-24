@@ -1,23 +1,38 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useContext } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import {UserDataContext} from "../context/UserContext";
 
-const UserLogin = () => {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+const UserSignup = () => {
+  const [firstname, setFirstName] = useState("");
+  const [lastname, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [userData, setUserData] = useState({});
 
-  const submitHandler = (e) => {
+  const navigate = useNavigate();
+  const { user, setUser } = useContext(UserDataContext);
+
+
+  const submitHandler = async (e) => {
     e.preventDefault();
-    setUserData({
-      fullName: {
-        firstName: firstName,
-        lastName: lastName,
+    const newUser = {
+      fullname: {
+        firstname: firstname,
+        lastname: lastname,
       },
       email: email,
       password: password,
-    });
+    };
+    const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/register`, newUser);
+
+    if (response.status === 200 || response.status === 201) {
+      const data = response.data;
+      localStorage.setItem('token', data.token);
+      setUser(data.user);
+      navigate("/home");
+    }
+
     setFirstName("");
     setLastName("");
     setEmail("");
@@ -36,7 +51,7 @@ const UserLogin = () => {
           <h3 className="text-base mb-2 font-medium">What's your Name</h3>
           <div className="flex gap-4 mb-5">
             <input
-              value={firstName}
+              value={firstname}
               onChange={(e) => {
                 setFirstName(e.target.value);
               }}
@@ -46,7 +61,7 @@ const UserLogin = () => {
               type="text"
             />
             <input
-              value={lastName}
+              value={lastname}
               onChange={(e) => {
                 setLastName(e.target.value);
               }}
@@ -100,4 +115,4 @@ const UserLogin = () => {
   );
 };
 
-export default UserLogin;
+export default UserSignup;

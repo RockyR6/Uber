@@ -52,7 +52,7 @@ const loginUser = async (req, res, next) => {
         return  res.status(401).json({message: 'Invalid email or password'})
     }
     const token = user.generateAuthToken();
-    res.cookie('token', token);
+    // res.cookie('token', token);
     res.status(200).json({ token, user });
 }
 
@@ -63,12 +63,24 @@ const getUserProfile = async (req, res, next) => {
 }
 
 //user logout controller
-const logoutUser = async (req, res, next) => {
-    res.clearCookie('token');
-    const token = req.cookies.token || req.header('Authorization')?.split(' ', [ 1 ]);
-    await BlacklistToken.create({ token });
-    res.status(200).json({message: 'Logged out successfully'})
-}
+const logoutUser = async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+
+    if (token) {
+      const exists = await BlacklistToken.findOne({ token });
+      if (!exists) {
+        await BlacklistToken.create({ token });
+      }
+    }
+
+    res.status(200).json({ message: "Logged out successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(200).json({ message: "Logged out" });
+  }
+};
+
 
 export const userController = {
     registerUser,
